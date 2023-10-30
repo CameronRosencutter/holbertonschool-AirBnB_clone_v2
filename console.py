@@ -136,7 +136,6 @@ class HBNBCommand(cmd.Cmd):
                 value = elem.partition("=")[2]
                 value = value.replace("_", " ")
                 setattr(new_instance, key, eval(value))
-
         print(new_instance.id)
         new_instance.save()
 
