@@ -8,9 +8,16 @@ class FileStorage:
     __file_path = 'file.json'
     __objects = {}
 
-    def all(self):
+    def all(self, cls=None):
         """Returns a dictionary of models currently in storage"""
-        return FileStorage.__objects
+        if cls is None:
+            return self.__objects
+        else:
+            filtered_objects = {}
+            for obj_id, obj in self.__objects.items():
+                if obj.__class__ == cls:
+                    filtered_objects[obj_id] = obj
+            return filtered_objects
 
     def new(self, obj):
         """Adds new object to storage dictionary"""
@@ -24,6 +31,15 @@ class FileStorage:
             for key, val in temp.items():
                 temp[key] = val.to_dict()
             json.dump(temp, f)
+
+    def delete(self, obj=None):
+        """deletes obj from _objects.
+        if obj is equal to None then nothing happens"""
+        if obj is None:
+            return
+        obj_key = "{}.{}".format(obj.__class__.__name__, obj.id)
+        if obj_key in self.__objects:
+            del self.__objects[obj_key]
 
     def reload(self):
         """Loads storage dictionary from file"""
@@ -39,12 +55,23 @@ class FileStorage:
                     'BaseModel': BaseModel, 'User': User, 'Place': Place,
                     'State': State, 'City': City, 'Amenity': Amenity,
                     'Review': Review
-                  }
+                }
         try:
             temp = {}
             with open(FileStorage.__file_path, 'r') as f:
                 temp = json.load(f)
                 for key, val in temp.items():
-                        self.all()[key] = classes[val['__class__']](**val)
+                    self.all()[key] = classes[val['__class__']](**val)
         except FileNotFoundError:
             pass
+
+    def delete(self, obj=None):
+        """function that deletes an object"""
+        if obj:
+            del(FileStorage.__objects["{}.{}".format
+                (obj.__class__.__name__, obj.id)])
+
+# Web framework- Task 7. Improve engines
+    def close(self):
+        """ deserializing the JSON file to objects """
+        self.reload()
